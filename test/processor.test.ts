@@ -121,6 +121,30 @@ test('rejects a result posted outside the puzzle window', async () => {
   db.close();
 });
 
+test('accepts adjacent UTC+1 puzzle dates during the grace overlap', async () => {
+  const db = new Db(':memory:');
+  const boundaryTime = '2026-06-06T23:05:00Z';
+
+  const previousDay = fakeMessage({
+    content: '🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩 10/10 | 2026-06-06 | https://scrandle.com',
+    date: boundaryTime,
+  });
+  const previousOutcome = await processMessage(db, previousDay.message);
+  assert.equal(previousOutcome.recorded, true);
+
+  const currentDay = fakeMessage({
+    id: 'current-day',
+    userId: 'bob',
+    content: '🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩 10/10 | 2026-06-07 | https://scrandle.com',
+    date: boundaryTime,
+  });
+  const currentOutcome = await processMessage(db, currentDay.message);
+  assert.equal(currentOutcome.recorded, true);
+  assert.equal(currentOutcome.duplicateDay, false);
+
+  db.close();
+});
+
 test('honours the spoiler exemption based on message id', async () => {
   const db = new Db(':memory:');
   const before = fakeMessage({ id: BEFORE_CUTOFF, content: UNSPOILED, date: '2026-06-04T12:00:00Z' });
