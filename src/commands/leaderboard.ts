@@ -34,7 +34,7 @@ export const leaderboard: Command = {
     }
 
     const metric = (interaction.options.getString('metric') ??
-      'total') as LeaderboardMetric;
+      'average') as LeaderboardMetric;
     const limit = interaction.options.getInteger('limit') ?? 10;
 
     const entries = db.leaderboard(interaction.guildId, metric, limit);
