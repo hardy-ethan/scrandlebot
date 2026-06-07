@@ -36,7 +36,7 @@ test('records the per-round pattern in order', () => {
   assert.equal(parseScrandle(mixed).score?.pattern, 'RGRGGGGGGG');
 });
 
-test('computes day of week in UTC', () => {
+test('computes day of week for the UTC+1 puzzle date', () => {
   // 2026-06-03 is a Wednesday.
   assert.equal(parseScrandle(PERFECT).score?.dayOfWeek, 3);
   // 2026-06-04 is a Thursday.
@@ -105,9 +105,18 @@ test('falls back to enforcing spoilers for a non-numeric message id', () => {
   assert.equal(parseScrandle(UNSPOILED, { messageId: 'not-a-snowflake' }).valid, false);
 });
 
-test('puzzleWindow spans the day plus a 15 minute grace period', () => {
+test('puzzleWindow spans the UTC+1 day plus a 15 minute grace period', () => {
   const { start, end } = puzzleWindow('2026-06-04');
-  assert.equal(start, Date.parse('2026-06-04T00:00:00.000Z'));
-  assert.equal(end, Date.parse('2026-06-05T00:15:00.000Z'));
+  assert.equal(start, Date.parse('2026-06-03T23:00:00.000Z'));
+  assert.equal(end, Date.parse('2026-06-04T23:15:00.000Z'));
   assert.equal(end - start, (24 * 60 + 15) * 60 * 1000);
+});
+
+test('puzzleWindow includes 4:05pm PDT and excludes 7:55pm PDT', () => {
+  const { start, end } = puzzleWindow('2026-06-04');
+  const fourOhFivePdt = Date.parse('2026-06-04T16:05:00-07:00');
+  const sevenFiftyFivePdt = Date.parse('2026-06-04T19:55:00-07:00');
+
+  assert.equal(fourOhFivePdt >= start && fourOhFivePdt < end, true);
+  assert.equal(sevenFiftyFivePdt >= start && sevenFiftyFivePdt < end, false);
 });

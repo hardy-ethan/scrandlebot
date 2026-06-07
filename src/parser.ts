@@ -34,8 +34,8 @@ export interface ParsedScore {
   reportedScore: number;
   /** The Y from "X/Y" as written in the message. */
   reportedTotal: number;
-  puzzleDate: string; // YYYY-MM-DD
-  /** 0 = Sunday .. 6 = Saturday (UTC). */
+  puzzleDate: string; // YYYY-MM-DD (UTC+1)
+  /** 0 = Sunday .. 6 = Saturday. */
   dayOfWeek: number;
   url: string;
   spoilerWrapped: boolean;
@@ -154,11 +154,12 @@ export function parseScrandle(
 // Grace period added to the end of the window so results posted just after
 // midnight UTC still count.
 const GRACE_MS = 15 * 60 * 1000;
+const UTC_PLUS_1_MS = 60 * 60 * 1000;
 
 // The [start, end) window in which a result for puzzleDate can be posted:
-// from that date at 00:00 UTC up to (not including) the next day at 00:00 UTC,
+// from that date at 00:00 UTC+1 up to (not including) the next day at 00:00 UTC+1,
 // plus a 15 minute grace period at the end.
 export function puzzleWindow(puzzleDate: string): { start: number; end: number } {
-  const start = Date.parse(`${puzzleDate}T00:00:00.000Z`);
+  const start = Date.parse(`${puzzleDate}T00:00:00.000Z`) - UTC_PLUS_1_MS;
   return { start, end: start + 24 * 60 * 60 * 1000 + GRACE_MS };
 }
