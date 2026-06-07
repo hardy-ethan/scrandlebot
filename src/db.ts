@@ -206,6 +206,7 @@ export class Db {
          FROM scores
          WHERE guild_id = ?
          GROUP BY user_id
+         HAVING COUNT(*) >= 10
          ORDER BY ${orderBy}
          LIMIT ?`,
       )
